@@ -47,10 +47,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func scheduleNotification(notificationType: String) {
         // создаем контент
         let content = UNMutableNotificationContent()
+        // для создания новой категории нужно определить уникальный идентификатор, по которой будет определяться категория действий
+        let userAction = "User action"
+        
         content.title = notificationType
         content.body = "This is example how to create " + notificationType
         content.sound = UNNotificationSound.default
         content.badge = 1
+        // что бы включить наши дейтсвия в уведомления, надо включить нашу категорию в контент нашего уведомления.
+        content.categoryIdentifier = userAction
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
         
@@ -65,6 +70,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 print(error)
             }
         }
+        
+        /*
+         Что бы включить настраиваемые действия для пользователя уведомления, надо сначала создать и зарегистрировать категорию уведомления.
+         Категория определяет тип уведомления, которая может содержать одно или несколько действий.
+         Надо выполнить три основных шага:
+         1. определяем действия, которые должны быть в уведомлении. Действия уведомления могут предложить разблокировать устройство, запустить приложение, выполнив какое-то действие, либо предоставить вариант с деструктивным последствием (выделено красным цветом)
+        */
+        // позволит пользователю отложить действие на некоторое время.
+        let openAction = UNNotificationAction(identifier: "Open", title: "Open title", options: [.foreground])
+        let snoozeAction = UNNotificationAction(identifier: "Snooze", title: "Snooze title", options: [])
+        let deleteAction = UNNotificationAction(identifier: "Delete", title: "Delete title", options: [.destructive])
+        // 2. для создания новой категории нужно определить уникальный идентификатор, по которой будет определяться категория действий. identifier: userAction
+        let category = UNNotificationCategory(identifier: userAction,
+                                              actions: [openAction, snoozeAction, deleteAction],
+                                              intentIdentifiers: [],
+                                              options: [])
+        // 3. Зарегистрировать категорию в центре уведомлений.
+        notificationCenter.setNotificationCategories([category])
+        // что бы включить наши дейтсвия в уведомления, надо включить нашу категорию в контент нашего уведомления.
+        
     }
 }
 
@@ -80,6 +105,23 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         if response.notification.request.identifier == "Local notifications" {
             print("handling notification with Local notifications")
         }
+        
+        switch response.actionIdentifier {
+        case UNNotificationDismissActionIdentifier: // срабатывает в тот момент, когда пользователь явно отклоняет уведомление
+            print("Dismiss action")
+        case UNNotificationDefaultActionIdentifier:
+            print("Default")
+        case "Snooze":
+            print("Snooze")
+            scheduleNotification(notificationType: "Reminder")
+        case "Delete":
+            print("Delete")
+        case "Open":
+            print("Open")
+        default:
+            print("Unknow action")
+        }
+        
         completionHandler()
     }
 }
