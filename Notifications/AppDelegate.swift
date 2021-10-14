@@ -18,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         requestAuthorization()
+        notificationCenter.delegate = self  // delegate для протокола
         return true
     }
 
@@ -67,4 +68,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    // если хотим получить уведомление, даже когда приложение не свернуто
+    // срабатывает когда приложение открыто
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.alert, .sound])
+    }
 
+    // если хотим что-то обрабатывать при нажатии на нотификацию
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.identifier == "Local notifications" {
+            print("handling notification with Local notifications")
+        }
+        completionHandler()
+    }
+}
