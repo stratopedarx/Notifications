@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        UIApplication.shared.applicationIconBadgeNumber = 0
     }
 
     // запрашивает у пользователя разрешение на отправку уведомлений. При каждом запуске приложения запуск происходит.
@@ -41,5 +41,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("Notification settings: \(settings)")
         }
     }
+
+    // этот метод будет отвечать за расписание уведомлений
+    func scheduleNotification(notificationType: String) {
+        // создаем контент
+        let content = UNMutableNotificationContent()
+        content.title = notificationType
+        content.body = "This is example how to create " + notificationType
+        content.sound = UNNotificationSound.default
+        content.badge = 1
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        
+        // для каждого запрос требуется свой идентификатор
+        let identifier = "Local notifications"
+        
+        // создаем наш запрос
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        
+        notificationCenter.add(request) { error in
+            if let error = error {
+                print(error)
+            }
+        }
+    }
 }
+
 
