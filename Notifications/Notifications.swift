@@ -42,11 +42,16 @@ class Notifications: NSObject {
         // что бы включить наши дейтсвия в уведомления, надо включить нашу категорию в контент нашего уведомления.
         content.categoryIdentifier = userAction
         
+        
+        // добавим картинку
+        if let attachements = createAttachments() {
+            content.attachments = attachements
+        }
+        
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
         
-        // для каждого запрос требуется свой идентификатор
+        // для каждого запроса требуется свой идентификатор
         let identifier = "Local notifications"
-        
         // создаем наш запрос
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
@@ -56,6 +61,11 @@ class Notifications: NSObject {
             }
         }
         
+        // добавляем и регистрируем категорию категорию
+        createCategories(with: userAction)
+    }
+
+    private func createCategories(with identifier: String) {
         /*
          Что бы включить настраиваемые действия для пользователя уведомления, надо сначала создать и зарегистрировать категорию уведомления.
          Категория определяет тип уведомления, которая может содержать одно или несколько действий.
@@ -67,16 +77,27 @@ class Notifications: NSObject {
         let snoozeAction = UNNotificationAction(identifier: "Snooze", title: "Snooze title", options: [])
         let deleteAction = UNNotificationAction(identifier: "Delete", title: "Delete title", options: [.destructive])
         // 2. для создания новой категории нужно определить уникальный идентификатор, по которой будет определяться категория действий. identifier: userAction
-        let category = UNNotificationCategory(identifier: userAction,
+        let category = UNNotificationCategory(identifier: identifier,
                                               actions: [openAction, snoozeAction, deleteAction],
                                               intentIdentifiers: [],
                                               options: [])
         // 3. Зарегистрировать категорию в центре уведомлений.
         notificationCenter.setNotificationCategories([category])
         // что бы включить наши дейтсвия в уведомления, надо включить нашу категорию в контент нашего уведомления.
-        
     }
-
+    
+    private func createAttachments() -> [UNNotificationAttachment]? {
+        guard let path = Bundle.main.path(forResource: "think", ofType: "jpeg") else { return nil }
+        let url = URL(fileURLWithPath: path)
+        do {
+            print("Try to attach")
+            let attachment = try UNNotificationAttachment(identifier: "think", url: url, options: nil)
+            return [attachment]
+        } catch {
+            print("The attachment could not be loaded")
+            return nil
+        }
+    }
 }
 
 
